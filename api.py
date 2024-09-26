@@ -123,7 +123,7 @@ def readData(userId):
     except ProgrammingError as err:
         print(f"> error en la sintaxis sql: {err}")
     else:
-        return jsonify(dataUser), 200
+        return jsonify([dataUser]), 200
     finally:
         if conn.is_connected():
             cursor.close()

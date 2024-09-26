@@ -4,6 +4,8 @@ import requests
 import re
 import time
 from pwinput import pwinput
+import pandas as pd
+from tabulate import tabulate
 
 
 class Main():
@@ -22,6 +24,7 @@ class Main():
                     self.myProfile(self.user)
                 elif menu == '3':
                     print('saliendo')
+                    break
         except KeyboardInterrupt:
             print("\n> saliendo")
 
@@ -31,8 +34,8 @@ class Main():
             readall = requests.get(BASE_URL)
             if readall.status_code == 200:
                 res = readall.json()
-                for post in res:
-                    print(f"\n> Usuario: {post['username']: >20}\n> Titulo: {post['title']: >23}\n> Publicacion: {post['content']: >23}")
+                df = pd.DataFrame(res)
+                print(f'\n{tabulate(df, headers='keys', tablefmt='psql')}')
             if readall.status_code == 400:
                 res = readall.json()
                 print(f'\n> {res['empty']}')
@@ -92,11 +95,8 @@ class DataProfile():
         # {username, fullname,  birthdate, gmail}
         if response.status_code == 200:
             res = response.json()
-            username = res['username']
-            fullname = res['fullname']
-            birthdate = res['birthdate']
-            gmail = res['gmail']
-            print(f"\n> Nombre de usuario: {username}\n> Nombre completo: {fullname}\n> Fecha de nacimiento: {birthdate}\n> Correo electronico: {gmail}")
+            df = pd.DataFrame(res)
+            print(f'\n{tabulate(df, headers='keys', tablefmt='psql')}\n')
         else:
             print("\n> los datos no se pudieron visualizar intentalo de nuevo")
 
@@ -238,10 +238,8 @@ class PostsProfile():
                     allposts = requests.get(BASE_URL, params={'userId': userId, 'all': 'all'})
                     if allposts.status_code == 200:  # ok
                         res = allposts.json()
-                        data = res['data']
-                        print(f'\n>{res['succes']}')
-                        for post in data:
-                            print(f'\n> titulo: {post['title']}\n> publicacion: {post['content']}', flush=True)
+                        df = pd.DataFrame(res)
+                        print(f'\n{tabulate(df, headers='keys', tablefmt='psql')}\n')
                         break
                     if allposts.status_code == 400:  # not ok
                         res = allposts.json()
@@ -257,9 +255,8 @@ class PostsProfile():
                         byone = requests.get(BASE_URL, params={'userId': userId, 'byone': 'one', 'search': search})
                         if byone.status_code == 200:  # ok
                             res = byone.json()
-                            title = res['title']
-                            content = res['content']
-                            print(f'\n> titulo: {title}\n> publicacion: {content}')
+                            df = pd.DataFrame(res)
+                            print(f'\n{tabulate(df, headers='keys', tablefmt='psql')}\n')
                         if byone.status_code == 400:
                             res = byone.json()
                             print(f'\n> {res['error']}')
@@ -316,8 +313,8 @@ class PostsProfile():
                 if search.status_code == 200:
                     match = search.json()
                     data = match['data']  # [{title}, {content}]
-                    for post in data:
-                        print(f'\n> titulo: {post['title']}\n> publicacion: {post['content']}', flush=True)
+                    df = pd.DataFrame(match)
+                    print(f'\n{tabulate(df, header='keys', tablefmt='psql')}\n')
                     choice = input('\n> es tu publicacion?: ')
                     if choice in ['si', 'yes', 'sure', 'es la publicacion que busco', 'ok']:
                         alldata['oldC'] = data['content']
@@ -405,6 +402,7 @@ if __name__ == '__main__':
                 from login import LogIn
                 init_sesion = LogIn()
                 init_sesion.logIn()
+                break
             elif choice == '2':
                 from login import LogIn
                 sign_up = LogIn()
